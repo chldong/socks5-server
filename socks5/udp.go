@@ -2,6 +2,7 @@ package socks5
 
 import (
 	"bytes"
+	"crypto/tls"
 	"io"
 	"log"
 	"net"
@@ -20,7 +21,11 @@ func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 	responseUDP(tcpConn, bindAddr)
 	//keep tcp conn
 	done := make(chan bool)
-	go keepTCPAlive(tcpConn.(*net.TCPConn), done)
+	if config.TLS {
+		go keepTLSAlive(tcpConn.(*tls.Conn), done)
+	} else {
+		go keepTCPAlive(tcpConn.(*net.TCPConn), done)
+	}
 	<-done
 }
 
@@ -29,6 +34,17 @@ func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
 	buf := make([]byte, BufferSize)
 	for {
 		_, err := tcpConn.Read(buf[0:])
+		if err != nil {
+			break
+		}
+	}
+	done <- true
+}
+
+func keepTLSAlive(conn *tls.Conn, done chan<- bool) {
+	buf := make([]byte, BufferSize)
+	for {
+		_, err := conn.Read(buf[0:])
 		if err != nil {
 			break
 		}
