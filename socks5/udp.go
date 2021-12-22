@@ -134,6 +134,9 @@ func (relay *UDPRelay) getAddr(b []byte) (dstAddr *net.UDPAddr, header []byte, d
 	   |  2 |   1  |   1  | Variable |     2    | Variable |
 	   +----+------+------+----------+----------+----------+
 	*/
+	if len(b) < 4 {
+		return nil, nil, nil
+	}
 	if b[2] != 0x00 {
 		log.Printf("[udp] not support frag %v", b[2])
 		return nil, nil, nil

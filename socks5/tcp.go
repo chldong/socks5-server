@@ -39,6 +39,9 @@ func getAddr(b []byte) (host string, port string) {
 	  +----+-----+-------+------+----------+----------+
 	*/
 	len := len(b)
+	if len < 4 {
+		return "", ""
+	}
 	switch b[3] {
 	case Ipv4Address:
 		host = net.IPv4(b[4], b[5], b[6], b[7]).String()
