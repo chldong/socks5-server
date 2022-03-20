@@ -18,7 +18,7 @@ func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 	}
 	bindAddr, _ := net.ResolveUDPAddr("udp", udpConn.LocalAddr().String())
 	//send response to client
-	responseUDP(tcpConn, bindAddr)
+	responseUDPClient(tcpConn, bindAddr)
 	//keep tcp conn
 	done := make(chan bool)
 	if config.TLS {

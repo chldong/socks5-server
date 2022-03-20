@@ -1,3 +1,3 @@
 module github.com/net-byte/socks5-server
 
-go 1.17
+go 1.18
