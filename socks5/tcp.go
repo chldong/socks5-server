@@ -16,12 +16,12 @@ func TCPProxy(conn net.Conn, data []byte) {
 	remoteConn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), time.Duration(Timeout)*time.Second)
 	if err != nil {
 		log.Printf("[tcp] failed to dial tcp %v", err)
-		responseTCP(conn, ConnectionRefused)
+		responseClient(conn, ConnectionRefused)
 		return
 	}
-	responseTCP(conn, SuccessReply)
+	responseClient(conn, SuccessReply)
 	go copy(remoteConn, conn)
-	go copy(conn, remoteConn)
+	copy(conn, remoteConn)
 }
 
 func copy(to io.WriteCloser, from io.ReadCloser) {

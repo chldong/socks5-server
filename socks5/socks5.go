@@ -67,9 +67,9 @@ func tcpHandler(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 		responseAuthType(tcpConn, UserPassAuth)
 		username, password := getUserPwd(tcpConn)
 		if username == config.Username && password == config.Password {
-			responseAuthResult(tcpConn, AuthSuccess)
+			responseAuthStatus(tcpConn, AuthSuccess)
 		} else {
-			responseAuthResult(tcpConn, AuthFailure)
+			responseAuthStatus(tcpConn, AuthFailure)
 		}
 	}
 	// read cmd
@@ -86,10 +86,10 @@ func tcpHandler(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 		UDPProxy(tcpConn, udpConn, config)
 		return
 	case BindCommand:
-		responseTCP(tcpConn, CommandNotSupported)
+		responseClient(tcpConn, CommandNotSupported)
 		return
 	default:
-		responseTCP(tcpConn, CommandNotSupported)
+		responseClient(tcpConn, CommandNotSupported)
 		return
 	}
 }

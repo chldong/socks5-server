@@ -17,7 +17,7 @@ func responseAuthType(conn net.Conn, authType uint8) {
 	conn.Write([]byte{Socks5Version, authType})
 }
 
-func responseAuthResult(conn net.Conn, status uint8) {
+func responseAuthStatus(conn net.Conn, status uint8) {
 	/**
 	  +----+--------+
 	  |VER | STATUS |
@@ -28,7 +28,7 @@ func responseAuthResult(conn net.Conn, status uint8) {
 	conn.Write([]byte{UserAuthVersion, status})
 }
 
-func responseTCP(conn net.Conn, rep byte) {
+func responseClient(conn net.Conn, rep byte) {
 	/**
 	  +----+-----+-------+------+----------+----------+
 	  |VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |
@@ -39,7 +39,7 @@ func responseTCP(conn net.Conn, rep byte) {
 	conn.Write([]byte{Socks5Version, rep, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 }
 
-func responseUDP(conn net.Conn, bindAddr *net.UDPAddr) {
+func responseUDPClient(conn net.Conn, bindAddr *net.UDPAddr) {
 	/**
 	  +----+-----+-------+------+----------+----------+
 	  |VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |
