@@ -11,7 +11,7 @@ A socks5 over tls server(tcp/udp) written in golang.
 ```
 Usage of /main:
   -l string
-        local address (default "127.0.0.1:1080")
+        local address (default ":1080")
   -p string
         password
   -u string
@@ -29,19 +29,19 @@ Usage of /main:
 ## Run server
 ```
 docker run  -d --restart=always --net=host \
--p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l 127.0.0.1:1080
+-p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080
 ```
 
 ## Run server with auth
 ```
 docker run  -d --restart=always --net=host \
--p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l 127.0.0.1:1080 -u root -p 123456
+-p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080 -u root -p 123456
 ```
 
 ## Run server over tls with auth
 ```
 docker run  -d --restart=always --net=host \
--p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l 127.0.0.1:1080 -u root -p 123456 -tls -sk /app/certs/server.key -sp /app/certs/server.pem
+-p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080 -u root -p 123456 -tls -sk /app/certs/server.key -sp /app/certs/server.pem
 ```
 
 # License
