@@ -43,7 +43,6 @@ func getPulicIP() string {
 	localAddr := conn.LocalAddr().String()
 	idx := strings.LastIndex(localAddr, ":")
 	return localAddr[0:idx]
-
 }
 
 func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
