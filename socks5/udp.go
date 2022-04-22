@@ -2,108 +2,49 @@ package socks5
 
 import (
 	"bytes"
-	"crypto/tls"
 	"io"
 	"log"
 	"net"
-	"strings"
 	"sync"
 	"time"
 )
 
-func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
-	defer tcpConn.Close()
-	if udpConn == nil {
-		log.Printf("[udp] failed to start udp server on %v", config.LocalAddr)
-		return
-	}
-	bindAddr, _ := net.ResolveUDPAddr("udp", udpConn.LocalAddr().String())
-	if bindAddr.IP.To4() == nil {
-		ip := getPulicIP()
-		bindAddr.IP = net.ParseIP(ip)
-	}
-	//send response to client
-	responseUDPClient(tcpConn, bindAddr)
-	//keep tcp conn
-	done := make(chan bool)
-	if config.TLS {
-		go keepTLSAlive(tcpConn.(*tls.Conn), done)
-	} else {
-		go keepTCPAlive(tcpConn.(*net.TCPConn), done)
-	}
-	<-done
+type UDPServer struct {
+	config      Config
+	localConn   *net.UDPConn
+	dstHeader   sync.Map
+	remoteConns sync.Map
 }
 
-func getPulicIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		return "127.0.0.1"
-	}
-	defer conn.Close()
-	localAddr := conn.LocalAddr().String()
-	idx := strings.LastIndex(localAddr, ":")
-	return localAddr[0:idx]
-}
-
-func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
-	tcpConn.SetKeepAlive(true)
-	buf := make([]byte, BufferSize)
-	for {
-		_, err := tcpConn.Read(buf[0:])
-		if err != nil {
-			break
-		}
-	}
-	done <- true
-}
-
-func keepTLSAlive(conn *tls.Conn, done chan<- bool) {
-	buf := make([]byte, BufferSize)
-	for {
-		_, err := conn.Read(buf[0:])
-		if err != nil {
-			break
-		}
-	}
-	done <- true
-}
-
-type UDPRelay struct {
-	Config        Config
-	LocalUDPConn  *net.UDPConn
-	DstMap        sync.Map
-	RemoteConnMap sync.Map
-}
-
-func (relay *UDPRelay) Start() *net.UDPConn {
-	udpAddr, _ := net.ResolveUDPAddr("udp", relay.Config.LocalAddr)
+func (u *UDPServer) Start() *net.UDPConn {
+	udpAddr, _ := net.ResolveUDPAddr("udp", u.config.LocalAddr)
 	udpConn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		log.Printf("[udp] failed to listen udp %v", err)
 		return nil
 	}
-	relay.LocalUDPConn = udpConn
-	go relay.toRemote()
+	u.localConn = udpConn
+	go u.toRemote()
 	log.Printf("socks5-server [udp] started on %v", udpAddr)
-	return relay.LocalUDPConn
+	return u.localConn
 }
 
-func (relay *UDPRelay) toRemote() {
-	defer relay.LocalUDPConn.Close()
+func (u *UDPServer) toRemote() {
+	defer u.localConn.Close()
 	buf := make([]byte, BufferSize)
 	for {
-		relay.LocalUDPConn.SetReadDeadline(time.Now().Add(time.Duration(Timeout) * time.Second))
-		n, cliAddr, err := relay.LocalUDPConn.ReadFromUDP(buf)
+		u.localConn.SetReadDeadline(time.Now().Add(time.Duration(Timeout) * time.Second))
+		n, cliAddr, err := u.localConn.ReadFromUDP(buf)
 		if err != nil || err == io.EOF || n == 0 {
 			continue
 		}
 		b := buf[:n]
-		dstAddr, header, data := relay.getAddr(b)
+		dstAddr, header, data := u.getAddr(b)
 		if dstAddr == nil || header == nil || data == nil {
 			continue
 		}
 		key := cliAddr.String()
-		value, ok := relay.RemoteConnMap.Load(key)
+		value, ok := u.remoteConns.Load(key)
 		if ok && value != nil {
 			remoteConn := value.(*net.UDPConn)
 			remoteConn.Write(data)
@@ -113,15 +54,15 @@ func (relay *UDPRelay) toRemote() {
 				log.Printf("failed to dial udp:%v", dstAddr)
 				continue
 			}
-			relay.RemoteConnMap.Store(key, remoteConn)
-			relay.DstMap.Store(key, header)
-			go relay.toLocal(remoteConn, cliAddr)
+			u.remoteConns.Store(key, remoteConn)
+			u.dstHeader.Store(key, header)
+			go u.toLocal(remoteConn, cliAddr)
 			remoteConn.Write(data)
 		}
 	}
 }
 
-func (relay *UDPRelay) toLocal(remoteConn *net.UDPConn, cliAddr *net.UDPAddr) {
+func (u *UDPServer) toLocal(remoteConn *net.UDPConn, cliAddr *net.UDPAddr) {
 	defer remoteConn.Close()
 	key := cliAddr.String()
 	buf := make([]byte, BufferSize)
@@ -131,25 +72,25 @@ func (relay *UDPRelay) toLocal(remoteConn *net.UDPConn, cliAddr *net.UDPAddr) {
 		if n == 0 || err != nil {
 			break
 		}
-		if header, ok := relay.DstMap.Load(key); ok {
+		if header, ok := u.dstHeader.Load(key); ok {
 			var data bytes.Buffer
 			data.Write(header.([]byte))
 			data.Write(buf[:n])
-			relay.LocalUDPConn.WriteToUDP(data.Bytes(), cliAddr)
+			u.localConn.WriteToUDP(data.Bytes(), cliAddr)
 		}
 	}
-	relay.DstMap.Delete(key)
-	relay.RemoteConnMap.Delete(key)
+	u.dstHeader.Delete(key)
+	u.remoteConns.Delete(key)
 }
 
-func (relay *UDPRelay) getAddr(b []byte) (dstAddr *net.UDPAddr, header []byte, data []byte) {
-	/*
-	   +----+------+------+----------+----------+----------+
-	   |RSV | FRAG | ATYP | DST.ADDR | DST.PORT |   DATA   |
-	   +----+------+------+----------+----------+----------+
-	   |  2 |   1  |   1  | Variable |     2    | Variable |
-	   +----+------+------+----------+----------+----------+
-	*/
+/*
+   +----+------+------+----------+----------+----------+
+   |RSV | FRAG | ATYP | DST.ADDR | DST.PORT |   DATA   |
+   +----+------+------+----------+----------+----------+
+   |  2 |   1  |   1  | Variable |     2    | Variable |
+   +----+------+------+----------+----------+----------+
+*/
+func (u *UDPServer) getAddr(b []byte) (dstAddr *net.UDPAddr, header []byte, data []byte) {
 	if len(b) < 4 {
 		return nil, nil, nil
 	}
