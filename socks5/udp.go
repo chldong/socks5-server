@@ -61,6 +61,9 @@ type UDPRelay struct {
 
 func (relay *UDPRelay) Start() *net.UDPConn {
 	udpAddr, _ := net.ResolveUDPAddr("udp", relay.Config.LocalAddr)
+	if udpAddr.IP.To4() == nil {
+		udpAddr.IP = net.IPv4(127, 0, 0, 1)
+	}
 	udpConn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		log.Printf("[udp] failed to listen udp %v", err)
@@ -68,7 +71,7 @@ func (relay *UDPRelay) Start() *net.UDPConn {
 	}
 	relay.LocalUDPConn = udpConn
 	go relay.toRemote()
-	log.Printf("socks5-server [udp] started on %v", relay.Config.LocalAddr)
+	log.Printf("socks5-server [udp] started on %v", udpAddr)
 	return relay.LocalUDPConn
 }
 
