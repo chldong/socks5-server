@@ -20,7 +20,6 @@ func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 	bindAddr, _ := net.ResolveUDPAddr("udp", udpConn.LocalAddr().String())
 	if bindAddr.IP.To4() == nil {
 		ip := getPulicIP()
-		log.Printf("[udp] public ip:%v", ip)
 		bindAddr.IP = net.ParseIP(ip)
 	}
 	//send response to client
@@ -38,7 +37,7 @@ func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 func getPulicIP() string {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		return ""
+		return "127.0.0.1"
 	}
 	defer conn.Close()
 	localAddr := conn.LocalAddr().String()
@@ -46,6 +45,7 @@ func getPulicIP() string {
 	return localAddr[0:idx]
 
 }
+
 func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
 	tcpConn.SetKeepAlive(true)
 	buf := make([]byte, BufferSize)
