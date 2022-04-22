@@ -8,7 +8,7 @@ import (
 
 func main() {
 	config := socks5.Config{}
-	flag.StringVar(&config.LocalAddr, "l", "127.0.0.1:1080", "local address")
+	flag.StringVar(&config.LocalAddr, "l", ":1080", "local address")
 	flag.StringVar(&config.Username, "u", "", "username")
 	flag.StringVar(&config.Password, "p", "", "password")
 	flag.StringVar(&config.ServerKey, "sk", "../certs/server.key", "server key file path")
