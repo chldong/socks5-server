@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 	"sync"
 	"time"
 )
@@ -17,6 +18,11 @@ func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 		return
 	}
 	bindAddr, _ := net.ResolveUDPAddr("udp", udpConn.LocalAddr().String())
+	if bindAddr.IP.To4() == nil {
+		ip := getPulicIP()
+		log.Printf("[udp] public ip:%v", ip)
+		bindAddr.IP = net.ParseIP(ip)
+	}
 	//send response to client
 	responseUDPClient(tcpConn, bindAddr)
 	//keep tcp conn
@@ -29,6 +35,17 @@ func UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 	<-done
 }
 
+func getPulicIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return ""
+	}
+	defer conn.Close()
+	localAddr := conn.LocalAddr().String()
+	idx := strings.LastIndex(localAddr, ":")
+	return localAddr[0:idx]
+
+}
 func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
 	tcpConn.SetKeepAlive(true)
 	buf := make([]byte, BufferSize)
@@ -61,9 +78,6 @@ type UDPRelay struct {
 
 func (relay *UDPRelay) Start() *net.UDPConn {
 	udpAddr, _ := net.ResolveUDPAddr("udp", relay.Config.LocalAddr)
-	if udpAddr.IP.To4() == nil {
-		udpAddr.IP = net.IPv4(127, 0, 0, 1)
-	}
 	udpConn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		log.Printf("[udp] failed to listen udp %v", err)
