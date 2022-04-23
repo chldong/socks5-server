@@ -1,6 +1,6 @@
 # socks5-server
 
-A socks5 server written in Golang.
+一款基于Go语言开发的Socks5代理
 
 [EN](https://github.com/net-byte/socks5-server/blob/master/README.md) | [中文](https://github.com/net-byte/socks5-server/blob/master/README_CN.md)
 
@@ -9,12 +9,12 @@ A socks5 server written in Golang.
 ![image](https://img.shields.io/badge/License-MIT-orange)
 ![image](https://img.shields.io/badge/License-Anti--996-red)
 
-# Features
-* Support connect
-* Support udp associate
-* Support tcp over tls
+# 特性
+* 支持 connect
+* 支持 udp associate
+* 支持 tls
 
-# Usage
+# 用法
 ```
 Usage of /main:
   -l string
@@ -33,19 +33,19 @@ Usage of /main:
 # Docker
 [socks5-server](https://hub.docker.com/r/netbyte/socks5-server)
 
-## Run server
+## 运行服务
 ```
 docker run  -d --restart=always --net=host \
 -p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080
 ```
 
-## Run server with auth
+## 运行服务（授权模式）
 ```
 docker run  -d --restart=always --net=host \
 -p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080 -u root -p 123456
 ```
 
-## Run server over tls with auth
+## 运行服务（TLS授权模式）
 ```
 docker run  -d --restart=always --net=host \
 -p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080 -u root -p 123456 -tls -sk /app/certs/server.key -sp /app/certs/server.pem
