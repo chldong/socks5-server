@@ -31,7 +31,7 @@ Usage of /main:
 ```
 
 # Docker
-[socks5-server](https://hub.docker.com/r/netbyte/socks5-server)
+[镜像](https://hub.docker.com/r/netbyte/socks5-server)
 
 ## 运行服务
 ```
