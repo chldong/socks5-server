@@ -91,24 +91,6 @@ func (t *TCPServer) handler(conn net.Conn) {
 	}
 }
 
-func (t *TCPServer) TCPProxy(conn net.Conn, data []byte) {
-	host, port := t.getAddr(data)
-	if host == "" || port == "" {
-		conn.Close()
-		return
-	}
-	remoteConn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), time.Duration(Timeout)*time.Second)
-	if err != nil {
-		log.Printf("[tcp] failed to dial tcp %v", err)
-		resp(conn, ConnectionRefused)
-		return
-	}
-	// resp tcp connect success
-	resp(conn, SuccessReply)
-	go copy(remoteConn, conn)
-	copy(conn, remoteConn)
-}
-
 /*
 +----+------+----------+------+----------+
  |VER | ULEN | UNAME | PLEN | PASSWD |
@@ -181,6 +163,24 @@ func (t *TCPServer) getAddr(b []byte) (host string, port string) {
 	}
 	port = strconv.Itoa(int(b[len-2])<<8 | int(b[len-1]))
 	return host, port
+}
+
+func (t *TCPServer) TCPProxy(conn net.Conn, data []byte) {
+	host, port := t.getAddr(data)
+	if host == "" || port == "" {
+		conn.Close()
+		return
+	}
+	remoteConn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), time.Duration(Timeout)*time.Second)
+	if err != nil {
+		log.Printf("[tcp] failed to dial tcp %v", err)
+		resp(conn, ConnectionRefused)
+		return
+	}
+	// resp tcp connect success
+	resp(conn, SuccessReply)
+	go copy(remoteConn, conn)
+	copy(conn, remoteConn)
 }
 
 func (t *TCPServer) UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
