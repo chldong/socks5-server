@@ -50,7 +50,7 @@ func (t *TCPServer) handler(conn net.Conn) {
 	buf := make([]byte, BufferSize)
 	// read version
 	n, err := conn.Read(buf[0:])
-	if err != nil || err == io.EOF {
+	if err != nil || err == io.EOF || n == 0 {
 		conn.Close()
 		return
 	}
@@ -74,7 +74,7 @@ func (t *TCPServer) handler(conn net.Conn) {
 	}
 	// read cmd
 	n, err = conn.Read(buf[0:])
-	if err != nil || err == io.EOF {
+	if err != nil || err == io.EOF || n < 2 {
 		conn.Close()
 		return
 	}
