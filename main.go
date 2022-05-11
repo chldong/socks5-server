@@ -14,6 +14,7 @@ func main() {
 	flag.StringVar(&config.ServerKey, "sk", "../certs/server.key", "server key file path")
 	flag.StringVar(&config.ServerPem, "sp", "../certs/server.pem", "server pem file path")
 	flag.BoolVar(&config.TLS, "tls", false, "enable tls")
+	flag.StringVar(&config.Iface, "iface", "", "interface specified by user")
 	flag.Parse()
 
 	socks5.StartServer(config)
