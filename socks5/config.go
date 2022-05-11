@@ -10,6 +10,6 @@ type Config struct {
 	ServerPem string
 	TLS       bool
 	Iface     string
-	_outIP    string
+	_outIP    net.IP
 	_outIface *net.Interface
 }
