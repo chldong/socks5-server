@@ -1,5 +1,7 @@
 package socks5
 
+import "net"
+
 type Config struct {
 	LocalAddr string
 	Username  string
@@ -7,4 +9,7 @@ type Config struct {
 	ServerKey string
 	ServerPem string
 	TLS       bool
+	Iface     string
+	_outIP    string
+	_outIface *net.Interface
 }

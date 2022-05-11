@@ -28,6 +28,8 @@ Usage of /main:
   -sp string
         server pem file path (default "../certs/server.pem")
   -tls enable tls
+  -iface string
+        interface specified by user
 ```
 
 # Docker

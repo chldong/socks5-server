@@ -49,14 +49,14 @@ func (u *UDPServer) toRemote() {
 			remoteConn := value.(*net.UDPConn)
 			remoteConn.Write(data)
 		} else {
-			remoteConn, err := net.DialUDP("udp", nil, dstAddr)
+			remoteConn, err := dial("udp", dstAddr.String(), u.config._outIface, net.IP(u.config._outIP))
 			if remoteConn == nil || err != nil {
 				log.Printf("failed to dial udp:%v", dstAddr)
 				continue
 			}
 			u.remoteConns.Store(key, remoteConn)
 			u.dstHeader.Store(key, header)
-			go u.toLocal(remoteConn, cliAddr)
+			go u.toLocal(remoteConn.(*net.UDPConn), cliAddr)
 			remoteConn.Write(data)
 		}
 	}
