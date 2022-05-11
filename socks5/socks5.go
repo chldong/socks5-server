@@ -18,7 +18,8 @@ func StartServer(config Config) {
 			log.Fatal(err)
 		}
 		config._outIface = ief
-		config._outIP = addrs[0].(*net.IPNet).IP.To4().String()
+		config._outIP = addrs[0].(*net.IPNet).IP.To4()
+		log.Printf("iface name: %v, out ip: %v", config.Iface, config._outIP.String())
 	}
 	// start udp server
 	u := &UDPServer{config: config}

@@ -170,7 +170,7 @@ func (t *TCPServer) TCPProxy(conn net.Conn, data []byte) {
 		conn.Close()
 		return
 	}
-	remoteConn, err := dial("tcp", net.JoinHostPort(host, port), t.config._outIface, net.IP(t.config._outIP))
+	remoteConn, err := dial("tcp", net.JoinHostPort(host, port), t.config._outIface, t.config._outIP)
 	if err != nil {
 		log.Printf("[tcp] failed to dial tcp %v", err)
 		resp(conn, ConnectionRefused)
