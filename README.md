@@ -13,6 +13,7 @@ A socks5 server written in Golang.
 * Support connect
 * Support udp associate
 * Support tcp over tls
+* Support specified interface
 
 # Usage
 ```
@@ -29,7 +30,7 @@ Usage of /main:
         server pem file path (default "../certs/server.pem")
   -tls enable tls
   -iface string
-        interface specified by user
+        specified interface
 ```
 
 # Docker
