@@ -13,6 +13,7 @@
 * 支持 connect
 * 支持 udp associate
 * 支持 tls
+* 支持指定网卡
 
 # 用法
 ```
@@ -29,7 +30,7 @@ Usage of /main:
         server pem file path (default "../certs/server.pem")
   -tls enable tls
   -iface string
-        interface specified by user
+        specified interface
 ```
 
 # Docker
