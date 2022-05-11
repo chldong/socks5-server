@@ -54,7 +54,7 @@ docker run  -d --restart=always --net=host \
 -p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080 -u root -p 123456 -tls -sk /app/certs/server.key -sp /app/certs/server.pem
 ```
 
-## 运行服务（支持指定网卡）
+## 运行服务（指定网卡）
 ```
 docker run  -d --restart=always --net=host \
 -p 1080:1080 -p 1080:1080/udp --name socks5-server netbyte/socks5-server -l :1080 -iface tun0
