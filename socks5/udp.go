@@ -14,6 +14,8 @@ type UDPServer struct {
 	localConn   *net.UDPConn
 	dstHeader   sync.Map
 	remoteConns sync.Map
+	outIP       net.IP
+	outIface    *net.Interface
 }
 
 func (u *UDPServer) Start() *net.UDPConn {
@@ -49,7 +51,7 @@ func (u *UDPServer) toRemote() {
 			remoteConn := value.(*net.UDPConn)
 			remoteConn.Write(data)
 		} else {
-			remoteConn, err := dial("udp", dstAddr.String(), u.config._outIface, u.config._outIP)
+			remoteConn, err := dial("udp", dstAddr.String(), u.outIface, u.outIP)
 			if remoteConn == nil || err != nil {
 				log.Printf("failed to dial udp:%v", dstAddr)
 				continue

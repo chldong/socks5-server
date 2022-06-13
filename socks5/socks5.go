@@ -5,26 +5,32 @@ import (
 	"net"
 )
 
-// Start server
+// Start starts a socks5 server
 func StartServer(config Config) {
-	// set iface
-	if config.Iface != "" {
-		ief, err := net.InterfaceByName(config.Iface)
-		if err != nil {
-			log.Fatal("get Interface error", err)
-		}
-		addrs, err := ief.Addrs()
-		if err != nil {
-			log.Fatal(err)
-		}
-		config._outIface = ief
-		config._outIP = addrs[0].(*net.IPNet).IP.To4()
-		log.Printf("iface name: %v, out ip: %v", config.Iface, config._outIP.String())
-	}
+	outIP, outIface := getIface(config)
 	// start udp server
-	u := &UDPServer{config: config}
+	u := &UDPServer{config: config, outIP: outIP, outIface: outIface}
 	udpConn := u.Start()
 	// start tcp server
-	t := &TCPServer{config: config, udpConn: udpConn}
+	t := &TCPServer{config: config, udpConn: udpConn, outIP: outIP, outIface: outIface}
 	t.Start()
+}
+
+// getIface returns the outbound interface and IP
+func getIface(config Config) (net.IP, *net.Interface) {
+	if config.Iface == "" {
+		return nil, nil
+	}
+	ief, err := net.InterfaceByName(config.Iface)
+	if err != nil {
+		log.Fatal("get Interface error", err)
+	}
+	addrs, err := ief.Addrs()
+	if err != nil {
+		log.Fatal(err)
+	}
+	outIface := ief
+	outIP := addrs[0].(*net.IPNet).IP.To4()
+	log.Printf("iface name: %v, out ip: %v", config.Iface, outIP.String())
+	return outIP, outIface
 }
