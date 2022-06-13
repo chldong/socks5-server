@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Tcp server struct
 type TCPServer struct {
 	config   Config
 	udpConn  *net.UDPConn
@@ -17,6 +18,7 @@ type TCPServer struct {
 	outIface *net.Interface
 }
 
+// Start tcp server
 func (t *TCPServer) Start() {
 	var l net.Listener
 	var err error
@@ -47,6 +49,7 @@ func (t *TCPServer) Start() {
 	}
 }
 
+// Tcp handler
 func (t *TCPServer) handler(conn net.Conn) {
 	buf := make([]byte, BufferSize)
 	// read version
@@ -92,8 +95,9 @@ func (t *TCPServer) handler(conn net.Conn) {
 	}
 }
 
-/*
-+----+------+----------+------+----------+
+/**
+* Get username and password from conn
+ +----+------+----------+------+----------+
  |VER | ULEN | UNAME | PLEN | PASSWD |
  +----+------+----------+------+----------+
  | 1 | 1 | 1 to 255 | 1 | 1 to 255 |
@@ -141,11 +145,12 @@ func (t *TCPServer) getUserPwd(conn net.Conn) (user, pwd string) {
 }
 
 /**
+* Get host and port from data
   +----+-----+-------+------+----------+----------+
-  |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
-  +----+-----+-------+------+----------+----------+
-  | 1  |  1  | X'00' |  1   | Variable |    2     |
-  +----+-----+-------+------+----------+----------+
+ |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
+ +----+-----+-------+------+----------+----------+
+ | 1  |  1  | X'00' |  1   | Variable |    2     |
+ +----+-----+-------+------+----------+----------+
 */
 func (t *TCPServer) getAddr(b []byte) (host string, port string) {
 	len := len(b)
@@ -166,6 +171,7 @@ func (t *TCPServer) getAddr(b []byte) (host string, port string) {
 	return host, port
 }
 
+// Tcp proxy
 func (t *TCPServer) TCPProxy(conn net.Conn, data []byte) {
 	host, port := t.getAddr(data)
 	if host == "" || port == "" {
@@ -184,6 +190,7 @@ func (t *TCPServer) TCPProxy(conn net.Conn, data []byte) {
 	copy(conn, remoteConn)
 }
 
+// Udp proxy
 func (t *TCPServer) UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Config) {
 	defer tcpConn.Close()
 	if udpConn == nil {
@@ -209,6 +216,7 @@ func (t *TCPServer) UDPProxy(tcpConn net.Conn, udpConn *net.UDPConn, config Conf
 	<-done
 }
 
+// Get public ip
 func getPublicIP() string {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
@@ -220,6 +228,7 @@ func getPublicIP() string {
 	return localAddr[0:idx]
 }
 
+// Keep tcp connection alive
 func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
 	tcpConn.SetKeepAlive(true)
 	buf := make([]byte, BufferSize)
@@ -232,6 +241,7 @@ func keepTCPAlive(tcpConn *net.TCPConn, done chan<- bool) {
 	done <- true
 }
 
+// Keep tls connection alive
 func keepTLSAlive(conn *tls.Conn, done chan<- bool) {
 	buf := make([]byte, BufferSize)
 	for {
@@ -243,6 +253,7 @@ func keepTLSAlive(conn *tls.Conn, done chan<- bool) {
 	done <- true
 }
 
+// Copy data from src to dst
 func copy(to io.WriteCloser, from io.ReadCloser) {
 	defer to.Close()
 	defer from.Close()

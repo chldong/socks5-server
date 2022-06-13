@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Udp server struct
 type UDPServer struct {
 	config      Config
 	localConn   *net.UDPConn
@@ -18,6 +19,7 @@ type UDPServer struct {
 	outIface    *net.Interface
 }
 
+// Start udp server
 func (u *UDPServer) Start() *net.UDPConn {
 	udpAddr, _ := net.ResolveUDPAddr("udp", u.config.LocalAddr)
 	udpConn, err := net.ListenUDP("udp", udpAddr)
@@ -31,6 +33,7 @@ func (u *UDPServer) Start() *net.UDPConn {
 	return u.localConn
 }
 
+// To remote
 func (u *UDPServer) toRemote() {
 	defer u.localConn.Close()
 	buf := make([]byte, BufferSize)
@@ -64,6 +67,7 @@ func (u *UDPServer) toRemote() {
 	}
 }
 
+// To local
 func (u *UDPServer) toLocal(remoteConn *net.UDPConn, cliAddr *net.UDPAddr) {
 	defer remoteConn.Close()
 	key := cliAddr.String()
@@ -86,6 +90,7 @@ func (u *UDPServer) toLocal(remoteConn *net.UDPConn, cliAddr *net.UDPAddr) {
 }
 
 /*
+  * Get addr from packet
    +----+------+------+----------+----------+----------+
    |RSV | FRAG | ATYP | DST.ADDR | DST.PORT |   DATA   |
    +----+------+------+----------+----------+----------+

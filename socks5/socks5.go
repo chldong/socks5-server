@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-// Start starts a socks5 server
+// StartServer starts a socks5 server
 func StartServer(config Config) {
 	outIP, outIface := getIface(config)
 	// start udp server

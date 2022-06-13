@@ -7,6 +7,7 @@ import (
 	"github.com/net-byte/socks5-server/sockopt"
 )
 
+// Dial is a helper function to dial a tcp or udp connection
 func dial(network, addr string, outIface *net.Interface, outIP net.IP) (net.Conn, error) {
 	var la net.Addr
 	switch network {
