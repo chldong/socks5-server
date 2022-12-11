@@ -32,6 +32,8 @@ Usage of /main:
   -tls enable tls
   -iface string
         specified interface
+  -t int
+        dial timeout in seconds (default 30)
 ```
 
 # Docker

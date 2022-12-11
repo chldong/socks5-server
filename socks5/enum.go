@@ -35,6 +35,5 @@ const (
 )
 
 const (
-	Timeout    int = 60
 	BufferSize int = 4 * 1024
 )

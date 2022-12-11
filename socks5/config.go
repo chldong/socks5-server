@@ -9,4 +9,5 @@ type Config struct {
 	ServerPem string
 	TLS       bool
 	Iface     string
+	Timeout   int
 }

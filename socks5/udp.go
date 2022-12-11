@@ -38,7 +38,7 @@ func (u *UDPServer) toRemote() {
 	defer u.localConn.Close()
 	buf := make([]byte, BufferSize)
 	for {
-		u.localConn.SetReadDeadline(time.Now().Add(time.Duration(Timeout) * time.Second))
+		u.localConn.SetReadDeadline(time.Now().Add(time.Duration(u.config.Timeout) * time.Second))
 		n, cliAddr, err := u.localConn.ReadFromUDP(buf)
 		if err != nil || err == io.EOF || n == 0 {
 			continue
@@ -54,7 +54,7 @@ func (u *UDPServer) toRemote() {
 			remoteConn := value.(*net.UDPConn)
 			remoteConn.Write(data)
 		} else {
-			remoteConn, err := dial("udp", dstAddr.String(), u.outIface, u.outIP)
+			remoteConn, err := dial("udp", dstAddr.String(), u.outIface, u.outIP, u.config.Timeout)
 			if remoteConn == nil || err != nil {
 				log.Printf("failed to dial udp:%v", dstAddr)
 				continue
@@ -72,7 +72,7 @@ func (u *UDPServer) toLocal(remoteConn *net.UDPConn, cliAddr *net.UDPAddr) {
 	defer remoteConn.Close()
 	key := cliAddr.String()
 	buf := make([]byte, BufferSize)
-	remoteConn.SetReadDeadline(time.Now().Add(time.Duration(Timeout) * time.Second))
+	remoteConn.SetReadDeadline(time.Now().Add(time.Duration(u.config.Timeout) * time.Second))
 	for {
 		n, _, err := remoteConn.ReadFromUDP(buf)
 		if n == 0 || err != nil {

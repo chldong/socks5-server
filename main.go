@@ -15,6 +15,7 @@ func main() {
 	flag.StringVar(&config.ServerPem, "sp", "../certs/server.pem", "server pem file path")
 	flag.BoolVar(&config.TLS, "tls", false, "enable tls")
 	flag.StringVar(&config.Iface, "iface", "", "specified interface")
+	flag.IntVar(&config.Timeout, "t", 30, "dial timeout in seconds")
 	flag.Parse()
 
 	socks5.StartServer(config)
